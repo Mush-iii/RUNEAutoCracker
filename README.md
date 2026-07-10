@@ -44,7 +44,7 @@ duckduckgo-search
 Install all dependencies:
 
 ```
-pip install customtkinter tkinterdnd2 requests pywin32 beautifulsoup4 duckduckgo-search
+pip install customtkinter tkinterdnd2 requests pywin32 beautifulsoup4 ddg
 ```
 
 ### Emulator Files
