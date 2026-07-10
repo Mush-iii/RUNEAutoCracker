@@ -64,6 +64,10 @@ try:
     # ─── EMULATOR UPDATES ────────────────────────────────────────────────────────
     EMU_MANIFEST_URL = "https://github.com/Mush-iii/rune-emu/releases/latest/download/manifest.json"
 
+    # ─── SELF (APP) UPDATE ───────────────────────────────────────────────────────
+    SELF_UPDATE_VERSION_URL = "https://raw.githubusercontent.com/Mush-iii/RUNEAutoCracker/Updater/latestversion.json"
+    SELF_UPDATE_EXE_URL = "https://raw.githubusercontent.com/Mush-iii/RUNEAutoCracker/Updater/Updater.exe"
+
     COMPONENT_DIRS = {
         "rune_emu":    os.path.join("rune", "emu"),
         "steakclient": os.path.join("rune", "steakclient"),
@@ -441,6 +445,7 @@ try:
             self._build_ui()
 
             self.after(300, self._startup_emu_check)
+            self.after(500, self._check_self_update)
 
         def _missing_component_dirs(self):
             missing = []
@@ -483,6 +488,48 @@ try:
                     EmuUpdateDialog(self, to_install_extra)
 
             self.check_emu_updates(_on_done)
+
+        # ── Self (app) update ────────────────────────────────────────────────
+        def _check_self_update(self):
+            def _run():
+                try:
+                    r = requests.get(SELF_UPDATE_VERSION_URL, timeout=10, headers={"User-Agent": USER_AGENT})
+                    if not r.ok:
+                        return
+                    remote_version = r.json().get("version", "").strip()
+                    if not remote_version:
+                        return
+                except Exception:
+                    return
+
+                if _parse_version(remote_version) <= _parse_version(VERSION):
+                    return
+
+                self.after(0, lambda: self.log(f"\n[UPDATE] New version found: {remote_version}"))
+
+                updater_path = os.path.join(os.getcwd(), "Updater.exe")
+                try:
+                    self.after(0, lambda: self.log("[UPDATE] Downloading updater..."))
+                    r2 = requests.get(SELF_UPDATE_EXE_URL, timeout=60, headers={"User-Agent": USER_AGENT})
+                    if not r2.ok:
+                        self.after(0, lambda: self.log("[UPDATE] Download failed."))
+                        return
+                    with open(updater_path, "wb") as f:
+                        f.write(r2.content)
+                    self.after(0, lambda: self.log("[UPDATE] Downloaded. Launching updater..."))
+                except Exception:
+                    self.after(0, lambda: self.log("[UPDATE] Download failed."))
+                    return
+
+                try:
+                    subprocess.Popen([updater_path], cwd=os.getcwd())
+                except Exception:
+                    self.after(0, lambda: self.log("[UPDATE] Failed to launch updater."))
+                    return
+
+                self.after(500, lambda: os._exit(0))
+
+            threading.Thread(target=_run, daemon=True).start()
 
         def _on_drop(self, event):
             path = event.data.strip("{}").replace("\\", "/")
@@ -576,6 +623,7 @@ try:
         _KEYWORD_TAGS = [
             (r"\[INIT\]", "head"),
             (r"\[CRACK\]", "head"),
+            (r"\[UPDATE\]", "head"),
             (r"\[DONE\]", "ok"),
             (r"\[FAIL\]", "err"),
             (r"\bOK\b", "ok"),
