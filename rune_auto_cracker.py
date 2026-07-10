@@ -79,8 +79,6 @@ try:
     }
 
     def _parse_version(v):
-        """Turn a dotted version string like '1.0.1.70' into a comparable tuple.
-        Non-numeric segments fall back to 0 rather than raising."""
         parts = []
         for p in re.split(r'[.\-]', str(v)):
             try:
@@ -92,8 +90,6 @@ try:
     import sys
 
     def resource_path(relative_path):
-        """Resolve a bundled resource path for both normal script runs and
-        PyInstaller-frozen exes (where files are extracted to sys._MEIPASS)."""
         base_path = getattr(sys, "_MEIPASS", os.path.abspath("."))
         return os.path.join(base_path, relative_path)
 
@@ -230,7 +226,6 @@ try:
             return mapping
 
     def generate_steam_interfaces(dll_locations, ini_filename="steam_emu.ini", source_files=None):
-        """Returns the total number of interfaces generated across all dll_locations."""
         total_generated = 0
         for dll_location in dll_locations:
             if source_files and dll_location in source_files:
@@ -424,10 +419,6 @@ try:
 
     # ─── MAIN APP CLASS (TkinterDnD root + CustomTkinter widgets) ────────────────
     class RuneApp(TkinterDnD.Tk):
-        """
-        TkinterDnD.Tk is used as the root window (needed for native drag & drop),
-        but every widget inside is CustomTkinter for a modern, consistent look.
-        """
         def __init__(self):
             super().__init__()
 
@@ -862,16 +853,6 @@ try:
             return os.path.join(scDir, name)
 
         def _apply_steamstub(self, is64, step, total_steps, staging_root=None):
-            """Asks the user to pick the main game EXE (same as the Steakclient
-            profile does) and copies the matching steamstub_x64/x32.dll beside
-            it, renamed to winmm.dll.
-
-            If staging_root is given (crack-only mode), the file is written
-            into the staging dir at the same relative path instead of beside
-            the real EXE — the real game folder is never touched.
-
-            Returns the chosen exe_dir, or None if the user cancelled or the
-            source file was missing."""
             game_exe = filedialog.askopenfilename(
                 title="Select the main game executable",
                 initialdir=folder_path,
@@ -907,12 +888,6 @@ try:
             return exe_dir, dst
 
         def _run_steamless_on_staged(self, staging_root, step, total_steps, steamlessOptions=""):
-            """Runs Steamless against EXE copies that live only in
-            staging_root — the real game folder is never touched. Any EXE
-            that Steamless doesn't unpack (no SteamStub found) is dropped
-            from staging entirely, since it's not part of the crack. EXEs
-            that ARE unpacked are kept as a pair: the patched EXE (original
-            name) plus a backup of the original packed EXE (GameEXE suffix)."""
             stub_removed = []
             for root_dir, dirs, files in os.walk(staging_root):
                 for fileName in list(files):
@@ -926,8 +901,6 @@ try:
                         shell=True, creationflags=subprocess.CREATE_NEW_CONSOLE)
                     unpacked = cwd_temp + ".unpacked.exe"
                     if not os.path.isfile(unpacked):
-                        # No SteamStub found — this EXE isn't part of the
-                        # crack, drop the staged copy.
                         try:
                             os.remove(cwd_temp)
                         except Exception:
@@ -945,9 +918,6 @@ try:
             return stub_removed
 
         def _stage_exes_from_folder(self, staging_root):
-            """Copies every EXE under folder_path into staging_root, preserving
-            relative sub-directory structure. Used so Steamless can run on a
-            staged copy without ever touching the real game folder."""
             for root_dir, dirs, files in os.walk(folder_path):
                 rel_dir = os.path.relpath(root_dir, folder_path)
                 for f in files:
@@ -957,10 +927,6 @@ try:
                         shutil.copyfile(os.path.join(root_dir, f), staged_exe)
 
         def _run_steamless_on_folder(self, step, total_steps, steamlessOptions=""):
-            """Runs Steamless directly against folder_path (real files).
-            Returns the absolute paths of every file this touched — the
-            patched EXE plus its backup, for each EXE that had a SteamStub —
-            so callers can include them in a Crack Only zip when needed."""
             stub_removed = []
             touched_files = []
             for root_dir, dirs, files in os.walk(folder_path):
@@ -991,8 +957,6 @@ try:
 
         # ── Emulator updates (rune-emu GitHub release manifest) ───────────────
         def check_emu_updates(self, on_done):
-            """Fetches the manifest in a background thread and reports back on
-            the main thread via on_done(outdated_list, error_str)."""
             def _run():
                 try:
                     resp = requests.get(EMU_MANIFEST_URL, timeout=15,
@@ -1015,8 +979,6 @@ try:
             threading.Thread(target=_run, daemon=True).start()
 
         def apply_emu_update(self, name, info, log_fn):
-            """Downloads, verifies, extracts, and always cleans up the zip
-            afterward — whether the update succeeded or failed."""
             target_dir = os.path.join(os.getcwd(), COMPONENT_DIRS[name])
             zip_path = os.path.join(os.getcwd(), f"_update_{name}.zip")
             label = COMPONENT_LABELS.get(name, name)
@@ -1063,8 +1025,6 @@ try:
             return name or "Game"
 
         def _stage_add(self, staging_root, dll_location, rel_from_dll_location, src_path):
-            """Copy src_path into staging_root, preserving the path *relative to
-            the original game folder* (dll_location + rel_from_dll_location)."""
             rel_from_game_root = os.path.relpath(
                 os.path.join(dll_location, rel_from_dll_location), folder_path)
             dst = os.path.join(staging_root, rel_from_game_root)
@@ -1073,7 +1033,6 @@ try:
             return dst
 
         def _get_crack_output_mode(self):
-            """Returns (crackonly_mode, also_zip, staging_root_or_None)."""
             crack_option = config["Settings"].get("CrackOption", "crack")
             crackonly_mode = (crack_option == "crackonly")
             also_zip = crack_option in ("crackonly", "both")
@@ -1081,9 +1040,6 @@ try:
             return crackonly_mode, also_zip, staging_root
 
         def _zip_staging_dir(self, staging_root, step, total_steps):
-            """Zips everything under staging_root (preserving sub-directory
-            structure) into {GameName}.Crack.Only.zip, placed OUTSIDE
-            (one level above) the game folder. Returns the zip path."""
             parent_dir = os.path.dirname(os.path.normpath(folder_path))
             zip_name = f"{self._sanitize_zip_name(gameName)}.Crack.Only.zip"
             zip_path = os.path.join(parent_dir, zip_name)
@@ -1102,10 +1058,6 @@ try:
             return zip_path
 
         def _zip_real_files(self, staged_files, step, total_steps):
-            """Used for the 'both' crack option: zips a copy of exactly the
-            real files that were written into folder_path, preserving their
-            relative structure — the real folder itself was already cracked
-            normally, this just also produces the standalone zip."""
             parent_dir = os.path.dirname(os.path.normpath(folder_path))
             zip_name = f"{self._sanitize_zip_name(gameName)}.Crack.Only.zip"
             zip_path = os.path.join(parent_dir, zip_name)
@@ -1163,11 +1115,6 @@ try:
                                             ("steam_api64.dll", "steam_api64.rne")):
                     if dll_name in files:
                         if crackonly_mode:
-                            # Never overwrite/rename anything in folder_path.
-                            # If a .rne backup already exists we just read
-                            # from the live dll (or the backup if the dll
-                            # itself is missing) purely for interface/version
-                            # extraction — nothing is written back.
                             apiFile = root_dir + "/" + dll_name
                             dllBitness.setdefault(root_dir, set()).add(dll_name == "steam_api64.dll")
                             try:
@@ -1216,11 +1163,6 @@ try:
             staged_files = []
 
             if crackonly_mode:
-                # Stage a backup copy of each live steam_api(64).dll — this
-                # represents the original API that a real crack would set
-                # aside — without ever writing into the real game folder.
-                # A folder may contain BOTH the 32-bit and 64-bit DLL, so
-                # every bitness present at each location gets backed up.
                 for loc in dllLocations:
                     for is64_loc in dllBitness.get(loc, {True}):
                         api_name = "steam_api64.dll" if is64_loc else "steam_api.dll"
@@ -1249,9 +1191,6 @@ try:
             added_files = []
 
             for dllCurrentLocation in dllLocations:
-                # A single folder may need BOTH steam_api.dll and
-                # steam_api64.dll replaced, so build the full set of wanted
-                # api filenames for this location instead of just one.
                 wanted_api_names = {
                     "steam_api64.dll" if is64_loc else "steam_api.dll"
                     for is64_loc in dllBitness.get(dllCurrentLocation, {True})
@@ -1264,13 +1203,6 @@ try:
                         relativeRootDir += "\\"
 
                     if crackonly_mode:
-                        # Build the emu file set purely in the staging dir.
-                        # Any of the emu's steam_api(64).dll files that match
-                        # a bitness actually present at this location gets
-                        # staged as a crack replacement (both, if both
-                        # bitnesses are present). The untouched original(s)
-                        # were already staged separately (above, under their
-                        # .rne backup name) before this loop runs.
                         for fileName in files:
                             if fileName in ("steam_api.dll", "steam_api64.dll") and fileName not in wanted_api_names:
                                 continue
@@ -1358,9 +1290,6 @@ try:
             # ── Step: Generating Interfaces ──────────────────────────────────
             step += 1
             if crackonly_mode:
-                # Extract interfaces straight from the live steam_api(64).dll
-                # in the game folder (read-only) and write them into the
-                # staged steam_emu.ini copies — the real folder is untouched.
                 iface_count = 0
                 for dllCurrentLocation in dllLocations:
                     for is64 in dllBitness.get(dllCurrentLocation, {True}):
@@ -1682,10 +1611,6 @@ try:
                 bak_name = os.path.splitext(api_name)[0] + config["Settings"]["GameEXE"]
 
                 if crackonly_mode:
-                    # Stage the untouched original under its backup name,
-                    # then patch a throwaway temp copy and stage THAT as the
-                    # live api_name — the real api_path in folder_path is
-                    # never modified.
                     self._stage_add(staging_root, root_dir, bak_name, api_path)
 
                     tmp_patch = os.path.join(tempfile.gettempdir(), f"_rune_patch_{api_name}")
@@ -1710,8 +1635,6 @@ try:
                         self._stage_add(staging_root, root_dir, f, os.path.join(support_dir, f))
                     supportFilesMap[root_dir] = support_files
 
-                    # Untouched real dll is safe to read from directly for
-                    # the interface-extraction step below.
                     source_files_map[root_dir] = api_path
                 else:
                     bak_path = os.path.join(root_dir, bak_name)
@@ -1722,9 +1645,6 @@ try:
                     else:
                         shutil.move(api_path, bak_path)
 
-                    # Recreate the live file from the untouched backup, then
-                    # patch the copy — the backup on disk stays a clean,
-                    # unmodified original.
                     shutil.copyfile(bak_path, api_path)
 
                     if not self._patch_shell32_string(api_path, is64):
@@ -1961,12 +1881,6 @@ try:
 
     # ─── SETTINGS DIALOG ─────────────────────────────────────────────────────────
     class SettingsDialog(ctk.CTkToplevel):
-        """
-        DRM removal method, backup-suffix (GameEXE), default profile, and
-        crack output mode are user-editable. Everything else (retry timing,
-        bypass-verification, crack option constant) is hardcoded and never
-        touches settings.ini.
-        """
         def __init__(self, master):
             super().__init__(master)
             self.master_app = master
@@ -2090,9 +2004,6 @@ try:
 
     # ─── EMULATOR UPDATE DIALOG ──────────────────────────────────────────────────
     class EmuUpdateDialog(ctk.CTkToplevel):
-        """Lists outdated emulator components (from the GitHub release manifest)
-        and lets the user update all of them. Downloaded zips are always
-        deleted after extraction, whether the update succeeds or fails."""
         def __init__(self, app, outdated):
             super().__init__(app)
             self.master_app = app
