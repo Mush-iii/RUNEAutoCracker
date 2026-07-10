@@ -1,0 +1,6 @@
+customtkinter
+tkinterdnd2
+requests
+pywin32
+beautifulsoup4
+ddgs
