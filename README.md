@@ -10,7 +10,7 @@ A tool that automatically removes Steam DRM from games using RUNE steam emulator
   - **Regular** — Replaces Steam API DLLs with the Rune emulator
   - **Steakclient** — Uses `steakclient64.dll` + `winmm.dll` loader (64-bit games only)
   - **Steamclient** — Automatically patches the SHELL32.dll import string in the original Steam API DLL and deploys steamclient loader files
-- **SteamStub DRM Removal** — Strips SteamStub DRM via Steamless CLI or a standalone SteamStub patcher (`winmm.dll`)
+- **SteamStub DRM Removal** — Strips SteamStub DRM via Steamless or a standalone SteamStub patcher (`winmm.dll`)
 - **Automatic Steam Search** — Enter a game name or AppID; the tool queries the Steam Store API, falls back to web scraping (BeautifulSoup) and DuckDuckGo search
 - **DLC Unlocking** — Fetches the full DLC list from Steam and writes it into the emulator config
 - **Steam Interface Extraction** — Automatically generates interfaces from the original `steam_api.dll` / `steam_api64.dll` 
