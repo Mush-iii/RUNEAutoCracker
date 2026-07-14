@@ -22,6 +22,10 @@ try:
     import hashlib
     import zipfile
     import tempfile
+    import concurrent.futures
+
+    from steam.client import SteamClient
+    from steam.enums.common import EResult
 
     import win32api
     def GetFileVersion(filename: str) -> str:
@@ -49,7 +53,7 @@ try:
         except ImportError:
             DDGS_AVAILABLE = False
 
-    VERSION = "1.0"
+    VERSION = "1.1"
 
     RETRY_DELAY = 15
     RETRY_MAX = 30
@@ -775,6 +779,102 @@ try:
 
             threading.Thread(target=_do, daemon=True).start()
 
+        def _get_pics_dlc_info(self, appID) -> dict:
+            result = {}
+            try:
+                client = SteamClient()
+                login_result = client.anonymous_login()
+                if login_result != EResult.OK:
+                    return {}
+
+                raw = client.get_product_info(apps=[appID])
+                game_info = raw["apps"][appID]
+
+                dlc_ids = set()
+                try:
+                    raw_list = game_info["extended"]["listofdlc"]
+                    dlc_ids |= set(int(x.strip()) for x in raw_list.split(",") if x.strip())
+                except Exception:
+                    pass
+
+                if "depots" in game_info:
+                    for dep, depot_info in game_info["depots"].items():
+                        if isinstance(depot_info, dict) and "dlcappid" in depot_info:
+                            try:
+                                dlc_ids.add(int(depot_info["dlcappid"]))
+                            except Exception:
+                                pass
+
+                if dlc_ids:
+                    dlc_raw = client.get_product_info(apps=dlc_ids)["apps"]
+                    for dlc_id in dlc_ids:
+                        dlc_name = ""
+                        try:
+                            dlc_name = f'{dlc_raw[dlc_id]["common"]["name"]}'.strip()
+                        except Exception:
+                            try:
+                                dlc_name = f'{dlc_raw[str(dlc_id)]["common"]["name"]}'.strip()
+                            except Exception:
+                                pass
+                        if dlc_name:
+                            result[dlc_id] = dlc_name
+
+                client.disconnect()
+            except Exception:
+                pass
+            return result
+
+        def _fetch_dlc_name(self, dlcID) -> Optional[str]:
+            try:
+                req = RuneRequest(
+                    f"https://store.steampowered.com/api/appdetails?appids={dlcID}&filters=basic",
+                    "RetrieveAppName").req
+                d = req.json()[str(dlcID)]
+                if "data" in d and "name" in d["data"]:
+                    return d["data"]["name"]
+            except Exception:
+                pass
+            return None
+
+        def _fetch_primary_dlc_ids(self, appID) -> list:
+            ids = []
+            try:
+                req2 = RuneRequest(
+                    f"https://store.steampowered.com/dlc/{appID}/random/ajaxgetfilteredrecommendations/?query&count=10000",
+                    "RetrieveDLC").req
+                data2 = req2.json()
+                if not data2.get("success"):
+                    return []
+                total = data2["total_count"]
+                resultsIndex = 0
+                for _ in range(total):
+                    resultsIndex = data2["results_html"].find("data-ds-appid=\"", resultsIndex)
+                    if resultsIndex == -1:
+                        break
+                    resultsIndex += len("data-ds-appid=\"")
+                    resultsStr = ""
+                    while data2["results_html"][resultsIndex] != "\"":
+                        resultsStr += data2["results_html"][resultsIndex]
+                        resultsIndex += 1
+                    dlcID = int(resultsStr)
+                    if dlcID not in ids:
+                        ids.append(dlcID)
+            except Exception:
+                pass
+            return ids
+
+        def _fetch_appdetails_dlc_ids(self, appID) -> list:
+            try:
+                req4 = RuneRequest(
+                    f"https://store.steampowered.com/api/appdetails?appids={appID}",
+                    "RetrieveDLCList").req
+                data4 = req4.json()[str(appID)]
+                if data4.get("success") and "data" in data4:
+                    return data4["data"].get("dlc", [])
+            except Exception:
+                pass
+            return []
+
         def _retrieve_game(self, query, is_name_query) -> bool:
             global appID, gameName, dlcIDs, dlcNames
             dlcIDs = []
@@ -801,58 +901,60 @@ try:
             gameName = data["data"]["name"]
             appID = data["data"]["steam_appid"]
 
-            try:
-                req2 = RuneRequest(
-                    f"https://store.steampowered.com/dlc/{appID}/random/ajaxgetfilteredrecommendations/?query&count=10000",
-                    "RetrieveDLC").req
-            except Exception:
-                self.log_lookup(False, "DLC request error")
-                return False
+            # ── Fetch all three DLC ID sources in parallel ─────────────────
+            with concurrent.futures.ThreadPoolExecutor(max_workers=3) as ex:
+                f_primary = ex.submit(self._fetch_primary_dlc_ids, appID)
+                f_appdetails = ex.submit(self._fetch_appdetails_dlc_ids, appID)
+                f_pics = ex.submit(self._get_pics_dlc_info, appID)
 
-            data2 = req2.json()
-            if not data2["success"]:
+                primary_ids = f_primary.result()
+                appdetails_ids = f_appdetails.result()
+                pics_info = f_pics.result()
+
+            if not primary_ids and not appdetails_ids and not pics_info:
                 self.log_lookup(False, "DLC request rejected")
                 appID = 0
                 return False
 
-            total = data2["total_count"]
+            # ── Merge into one ordered, deduped list ────────────────────────
+            ordered_ids = []
+            for dlcID in primary_ids:
+                if dlcID not in ordered_ids:
+                    ordered_ids.append(dlcID)
+            for dlcID in appdetails_ids:
+                if dlcID not in ordered_ids:
+                    ordered_ids.append(dlcID)
+            for dlcID in pics_info:
+                if dlcID not in ordered_ids:
+                    ordered_ids.append(dlcID)
+
+            total = len(ordered_ids)
             dlc_word = f"{total} DLC{'s' if total != 1 else ''} found"
             detail = f"AppID={appID} & {dlc_word}" if is_name_query else f"{gameName} & {dlc_word}"
             self.log_lookup(True, detail)
 
             if total == 0:
                 return True
+            fetched_names = {}
+            with concurrent.futures.ThreadPoolExecutor(max_workers=10) as ex:
+                future_map = {ex.submit(self._fetch_dlc_name, d): d for d in ordered_ids}
+                for future in concurrent.futures.as_completed(future_map):
+                    dlcID = future_map[future]
+                    try:
+                        fetched_names[dlcID] = future.result()
+                    except Exception:
+                        fetched_names[dlcID] = None
 
-            resultsIndex = 0
-            i = -1
-            while i + 1 < total:
-                i += 1
-                resultsStr = ""
-                resultsIndex = data2["results_html"].find("data-ds-appid=\"", resultsIndex)
-                resultsIndex += len("data-ds-appid=\"")
-                while data2["results_html"][resultsIndex] != "\"":
-                    resultsStr += data2["results_html"][resultsIndex]
-                    resultsIndex += 1
-                dlcID = int(resultsStr)
-                if dlcID in dlcIDs:
-                    i -= 1
+            # ── Log everything in one continuous list ───────────────────────
+            for idx, dlcID in enumerate(ordered_ids):
+                appName = fetched_names.get(dlcID) or pics_info.get(dlcID)
+                if not appName:
+                    self.log(f"     ✗ No name found for AppID {dlcID}")
                     continue
                 dlcIDs.append(dlcID)
-                try:
-                    req3 = RuneRequest(
-                        f"https://store.steampowered.com/api/appdetails?appids={dlcIDs[i]}&filters=basic",
-                        "RetrieveAppName").req
-                    d = req3.json()[str(dlcIDs[i])]
-                    appName = d["data"]["name"] if "data" in d and "name" in d["data"] else "error"
-                except Exception:
-                    appName = "error"
-                if appName == "error":
-                    self.log(f"     ✗ No name found for AppID {dlcIDs[i]}")
-                    appID = 0
-                    return False
                 dlcNames.append(appName)
-                branch = "└─" if i == total - 1 else "├─"
-                self.log(f"     {branch} {appName} ({dlcIDs[i]})")
+                branch = "└─" if idx == total - 1 else "├─"
+                self.log(f"     {branch} {appName} ({dlcID})")
 
             return True
 
@@ -2149,7 +2251,7 @@ try:
 except Exception:
     print("\n[!!!] A Python error occurred! Writing to error.log\n---")
     with open("error.log", "w", encoding="utf-8") as f:
-        f.write(f"RUNE GUI v{VERSION}\n---\nPython error.\n---\n\n")
+        f.write(f"RUNEAutoCracker v{VERSION}\n---\nPython error.\n---\n\n")
         traceback.print_exc(file=f)
     traceback.print_exc()
     print("---\nSee error.log")
