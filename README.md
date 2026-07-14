@@ -33,19 +33,20 @@ customtkinter
 tkinterdnd2
 requests
 pywin32
+steam
 ```
 
 **Optional** (enable extra search fallbacks):
 
 ```
 beautifulsoup4
-duckduckgo-search
+ddgs
 ```
 
 Install all dependencies:
 
 ```
-pip install customtkinter tkinterdnd2 requests pywin32 beautifulsoup4 ddg
+pip install customtkinter tkinterdnd2 requests pywin32 beautifulsoup4 ddgs steam
 ```
 
 ### Emulator Files
