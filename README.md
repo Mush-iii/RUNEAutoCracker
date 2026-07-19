@@ -22,8 +22,7 @@ https://cs.rin.ru/forum/viewtopic.php?f=20&t=159883
 
 ## Screenshots
 
-![RUNEAutoCracker Screenshot 1](https://img.ptscreens.com/image675827968b9de920.png)
-![RUNEAutoCracker Screenshot 2](https://img.ptscreens.com/imageaf370d8d368c41e1.png)
+<a href="https://img.ptscreens.com/image675827968b9de920.png"><img src="https://img.ptscreens.com/image675827968b9de920.png" width="400"></a> <a href="https://img.ptscreens.com/imageaf370d8d368c41e1.png"><img src="https://img.ptscreens.com/imageaf370d8d368c41e1.png" width="400"></a>
 
 ## Requirements
 
