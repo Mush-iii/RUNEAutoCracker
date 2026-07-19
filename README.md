@@ -20,6 +20,11 @@ https://cs.rin.ru/forum/viewtopic.php?f=20&t=159883
 - **Drag & Drop** — Drop a game folder onto the window to select it
 - **Configurable** — Backup suffix, default profile, DRM method, crack output mode, and update behavior are all saved to `settings.ini`
 
+## Screenshots
+
+![RUNEAutoCracker Screenshot 1](https://img.ptscreens.com/image675827968b9de920.png)
+![RUNEAutoCracker Screenshot 2](https://img.ptscreens.com/imageaf370d8d368c41e1.png)
+
 ## Requirements
 
 - **OS:** Windows (64-bit)
