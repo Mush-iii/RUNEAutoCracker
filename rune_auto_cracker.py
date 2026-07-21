@@ -53,7 +53,7 @@ try:
         except ImportError:
             DDGS_AVAILABLE = False
 
-    VERSION = "1.1"
+    VERSION = "1.2"
 
     RETRY_DELAY = 15
     RETRY_MAX = 30
@@ -779,13 +779,13 @@ try:
 
             threading.Thread(target=_do, daemon=True).start()
 
-        def _get_pics_dlc_info(self, appID) -> dict:
+        def _get_pics_dlc_info(self, appID) -> tuple:
             result = {}
             try:
                 client = SteamClient()
                 login_result = client.anonymous_login()
                 if login_result != EResult.OK:
-                    return {}
+                    return False, {}
 
                 raw = client.get_product_info(apps=[appID])
                 game_info = raw["apps"][appID]
@@ -820,9 +820,9 @@ try:
                             result[dlc_id] = dlc_name
 
                 client.disconnect()
+                return True, result
             except Exception:
-                pass
-            return result
+                return False, {}
 
         def _fetch_dlc_name(self, dlcID) -> Optional[str]:
             try:
@@ -836,7 +836,7 @@ try:
                 pass
             return None
 
-        def _fetch_primary_dlc_ids(self, appID) -> list:
+        def _fetch_primary_dlc_ids(self, appID) -> tuple:
             ids = []
             try:
                 req2 = RuneRequest(
@@ -844,7 +844,7 @@ try:
                     "RetrieveDLC").req
                 data2 = req2.json()
                 if not data2.get("success"):
-                    return []
+                    return False, []
                 total = data2["total_count"]
                 resultsIndex = 0
                 for _ in range(total):
@@ -859,21 +859,21 @@ try:
                     dlcID = int(resultsStr)
                     if dlcID not in ids:
                         ids.append(dlcID)
+                return True, ids
             except Exception:
-                pass
-            return ids
+                return False, []
 
-        def _fetch_appdetails_dlc_ids(self, appID) -> list:
+        def _fetch_appdetails_dlc_ids(self, appID) -> tuple:
             try:
                 req4 = RuneRequest(
                     f"https://store.steampowered.com/api/appdetails?appids={appID}",
                     "RetrieveDLCList").req
                 data4 = req4.json()[str(appID)]
                 if data4.get("success") and "data" in data4:
-                    return data4["data"].get("dlc", [])
+                    return True, data4["data"].get("dlc", [])
+                return False, []
             except Exception:
-                pass
-            return []
+                return False, []
 
         def _retrieve_game(self, query, is_name_query) -> bool:
             global appID, gameName, dlcIDs, dlcNames
@@ -907,11 +907,11 @@ try:
                 f_appdetails = ex.submit(self._fetch_appdetails_dlc_ids, appID)
                 f_pics = ex.submit(self._get_pics_dlc_info, appID)
 
-                primary_ids = f_primary.result()
-                appdetails_ids = f_appdetails.result()
-                pics_info = f_pics.result()
+                primary_ok, primary_ids = f_primary.result()
+                appdetails_ok, appdetails_ids = f_appdetails.result()
+                pics_ok, pics_info = f_pics.result()
 
-            if not primary_ids and not appdetails_ids and not pics_info:
+            if not primary_ok and not appdetails_ok and not pics_ok:
                 self.log_lookup(False, "DLC request rejected")
                 appID = 0
                 return False
@@ -929,7 +929,7 @@ try:
                     ordered_ids.append(dlcID)
 
             total = len(ordered_ids)
-            dlc_word = f"{total} DLC{'s' if total != 1 else ''} found"
+            dlc_word = "No DLCs found" if total == 0 else f"{total} DLC{'s' if total != 1 else ''} found"
             detail = f"AppID={appID} & {dlc_word}" if is_name_query else f"{gameName} & {dlc_word}"
             self.log_lookup(True, detail)
 
