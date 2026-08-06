@@ -53,7 +53,7 @@ try:
         except ImportError:
             DDGS_AVAILABLE = False
 
-    VERSION = "1.2"
+    VERSION = "1.2.1"
 
     RETRY_DELAY = 15
     RETRY_MAX = 30
