@@ -1,7 +1,6 @@
 # RUNEAutoCracker
 
 A tool that automatically removes Steam DRM from games using RUNE steam emulator
-https://runeautocracker.vercel.app/<br>
 https://cs.rin.ru/forum/viewtopic.php?f=20&t=159883
 
 
