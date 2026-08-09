@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>RuneAutoCracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0b0b0c;--secondary:#131314;--rule:#1e1e20;--fg:#eaeaea;--muted:#8a8a8e;
+  --copper:#e6a15c;--radius:10px;
+}
+body{background:var(--bg);color:var(--fg);font-family:'Inter',sans-serif;min-height:100vh;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+.serif{font-family:'Instrument Serif',serif}
+code{font-family:'JetBrains Mono',monospace;font-size:.9em;color:var(--copper)}
+
+header{position:sticky;top:0;z-index:30;background:color-mix(in srgb, var(--bg) 88%, transparent);backdrop-filter:blur(14px);border-bottom:1px solid var(--rule)}
+.topbar{height:60px;display:flex;align-items:center;justify-content:space-between;padding:0 clamp(16px,4vw,48px);max-width:1200px;margin:0 auto;width:100%}
+.brand-name{font-family:'Instrument Serif',serif;font-size:19px;letter-spacing:.2px}
+.brand-name b{color:var(--copper);font-weight:400}
+.cta-btn{display:inline-flex;align-items:center;gap:6px;background:var(--fg);color:var(--bg);font-size:11.5px;font-weight:500;letter-spacing:.01em;padding:8px 14px;border-radius:999px;white-space:nowrap;transition:opacity .15s}
+.cta-btn:hover{opacity:.85}
+
+main{max-width:1200px;margin:0 auto;width:100%;padding:0 clamp(16px,4vw,48px)}
+
+.main-head{padding:64px 0 8px}
+.eyebrow{font-family:'JetBrains Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:.2em;color:var(--muted)}
+.page-title{font-family:'Instrument Serif',serif;font-size:clamp(30px,5vw,46px);margin-top:2px;font-weight:400;line-height:1.15}
+.page-sub{color:var(--muted);font-size:14px;max-width:52ch;margin-top:12px}
+.hero-actions{display:flex;gap:10px;margin-top:26px}
+.btn{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:500;padding:9px 18px;border-radius:999px;border:1px solid var(--rule);color:var(--fg)}
+.btn:hover{border-color:var(--copper)}
+.btn.primary{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+.btn.primary:hover{opacity:.88}
+
+.section{padding:40px 0 8px;border-top:1px solid var(--rule);margin-top:36px}
+.section-title{font-family:'Instrument Serif',serif;font-size:24px;font-weight:400;margin-bottom:8px}
+
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:22px;margin:18px 0 8px}
+.card{background:var(--secondary);border-radius:var(--radius);padding:18px}
+.card-genre{font-family:'JetBrains Mono',monospace;font-size:9.5px;text-transform:uppercase;letter-spacing:.14em;color:var(--muted)}
+.card-title{font-weight:600;font-size:15px;margin:4px 0 6px}
+.card-desc{font-size:12.5px;color:var(--muted);line-height:1.6}
+
+.steps-list{display:flex;flex-direction:column;margin:14px 0 8px}
+.step-row{display:flex;gap:18px;padding:16px 0;border-bottom:1px solid var(--rule)}
+.step-row:last-child{border-bottom:none}
+.step-num{font-family:'Instrument Serif',serif;font-size:22px;color:var(--copper);min-width:28px}
+.step-body h4{font-size:14.5px;font-weight:600;margin-bottom:4px}
+.step-body p{font-size:13px;color:var(--muted);max-width:60ch}
+
+.install-block{margin:14px 0 8px;background:var(--secondary);border-radius:var(--radius);overflow:hidden}
+.install-bar{display:flex;gap:6px;align-items:center;padding:10px 16px;border-bottom:1px solid var(--rule);font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted)}
+.install-bar span{width:8px;height:8px;border-radius:50%;background:var(--rule)}
+pre{padding:18px 20px;font-family:'JetBrains Mono',monospace;font-size:12.5px;overflow-x:auto;color:var(--fg)}
+pre .c{color:var(--muted)}
+
+footer{padding:40px 0 60px;font-family:'JetBrains Mono',monospace;font-size:10.5px;color:var(--muted);display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;text-transform:uppercase;letter-spacing:.06em;border-top:1px solid var(--rule);margin-top:40px}
+footer a:hover{color:var(--fg)}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="topbar">
+    <span class="brand-name"><b>RUNE</b>AutoCracker</span>
+    <a class="cta-btn" href="https://github.com/Mush-iii/RUNEAutoCracker/releases/latest/download/RUNEAutoCracker.zip">Download</a>
+  </div>
+</header>
+
+<main>
+  <div class="main-head">
+    <h1 class="page-title serif"><img src="https://raw.githubusercontent.com/Mush-iii/RUNEAutoCracker/refs/heads/main/steam.ico"></h1>
+    <p class="page-sub">An automatic Steam DRM removal & crack tool using the RUNE steam emulator.</p>
+    <div class="hero-actions">
+      <a id="download-btn" class="btn primary" href="https://github.com/Mush-iii/RUNEAutoCracker/releases/latest/download/RUNEAutoCracker.zip">Download</a>
+      <a class="btn" href="https://github.com/Mush-iii/RUNEAutoCracker">Source</a>
+    </div>
+  </div>
+
+  <script>
+  (function(){
+    var btn = document.getElementById('download-btn');
+    fetch('https://raw.githubusercontent.com/Mush-iii/RUNEAutoCracker/refs/heads/Updater/latestversion.json', {cache:'no-store'})
+      .then(function(r){ return r.json(); })
+      .then(function(data){
+        if (data && data.version) {
+          btn.textContent = 'Download v' + data.version;
+        }
+      })
+      .catch(function(){ /* keep default label if fetch fails */ });
+  })();
+  </script>
+
+  <div class="section">
+    <h2 class="section-title serif">Features</h2>
+    <div class="grid">
+      <div class="card"><p class="card-genre">Search</p><h3 class="card-title">Automatic Steam search</h3><p class="card-desc">Enter a name or AppID; falls back to scraping and DuckDuckGo when the Store API misses.</p></div>
+      <div class="card"><p class="card-genre">DLC</p><h3 class="card-title">DLC unlocking</h3><p class="card-desc">Pulls the full DLC list from Steam and writes it straight into the emulator config.</p></div>
+      <div class="card"><p class="card-genre">UX</p><h3 class="card-title">Drag and drop</h3><p class="card-desc">Drop a game folder onto the window instead of browsing for it.</p></div>
+      <div class="card"><p class="card-genre">Updates</p><h3 class="card-title">Emulator auto-update</h3><p class="card-desc">Checks a GitHub release manifest and verifies new components with SHA-256.</p></div>
+      <div class="card"><p class="card-genre">Emulators</p><h3 class="card-title">Three crack methods</h3><p class="card-desc">Regular, Steakclient, or Steamclient &mdash; picked automatically or set as your default.</p></div>
+      <div class="card"><p class="card-genre">Config</p><h3 class="card-title">Configurable</h3><p class="card-desc">Backup suffix, default profile, and DRM method all live in <code>settings.ini</code>.</p></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2 class="section-title serif">How it works</h2>
+    <div class="steps-list">
+      <div class="step-row"><div class="step-num serif">01</div><div class="step-body"><h4>Locate</h4><p>Recursively scans the game folder for <code>steam_api.dll</code> and <code>steam_api64.dll</code>.</p></div></div>
+      <div class="step-row"><div class="step-num serif">02</div><div class="step-body"><h4>Strip SteamStub</h4><p>Runs Steamless, or the standalone SteamStub patcher, against every executable.</p></div></div>
+      <div class="step-row"><div class="step-num serif">03</div><div class="step-body"><h4>Deploy emulator</h4><p>Backs up the originals with your configured suffix, writes AppID, API version, and DLC list into the config.</p></div></div>
+      <div class="step-row"><div class="step-num serif">04</div><div class="step-body"><h4>Generate interfaces</h4><p>Extracts interface version strings straight from the original binary and injects them.</p></div></div>
+      <div class="step-row"><div class="step-num serif">05</div><div class="step-body"><h4>Crack</h4><p>Drops the emulator into the game folder and the game runs cracked, ready to launch.</p></div></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2 class="section-title serif">Install</h2>
+    <div class="install-block">
+      <div class="install-bar"><span></span><span></span><span></span>&nbsp;powershell</div>
+      <pre><span class="c"># dependencies</span>
+pip install customtkinter tkinterdnd2 requests pywin32 beautifulsoup4 ddgs steam
+
+<span class="c"># run</span>
+python rune_auto_cracker.py</pre>
+    </div>
+  </div>
+
+  <footer>
+    <span>RuneAutoCracker &middot; BSD-3-Clause &middot; by Mush-iii</span>
+    <span><a href="https://github.com/Mush-iii/RUNEAutoCracker" target="_blank" rel="noopener">GitHub</a> &middot; <a href="https://github.com/Mush-iii/RUNEAutoCracker/releases" target="_blank" rel="noopener">Releases</a> &middot; <a href="https://github.com/Mush-iii/RUNEAutoCracker/issues" target="_blank" rel="noopener">Issues</a></span>
+  </footer>
+</main>
+
+</body>
+</html>
