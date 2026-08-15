@@ -1,6 +1,14 @@
-# RUNEAutoCracker
+<div align="center">
 
-Point it at a game folder and RUNEAutoCracker takes care of the rest — DRM removal, emulator deployment, and DLC unlocking, all through a drag-and-drop GUI.
+<h1>RUNEAutoCracker</h1>
+
+<strong>An automatic Steam DRM removal & crack tool using the RUNE steam emulator</strong>
+
+<a href="https://github.com/Mush-iii/RUNEAutoCracker/releases"><img src="https://img.shields.io/github/v/release/Mush-iii/RUNEAutoCracker" alt="Release"></a>
+<a href="https://github.com/Mush-iii/RUNEAutoCracker/releases"><img src="https://img.shields.io/github/downloads/Mush-iii/RUNEAutoCracker/total" alt="downloads"></a>
+
+</div>
+
 
 🔗 Forum thread: https://cs.rin.ru/forum/viewtopic.php?f=20&t=159883
 
