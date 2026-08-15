@@ -1,25 +1,20 @@
 # RUNEAutoCracker
 
-A tool that automatically removes Steam DRM from games using RUNE steam emulator
+A one-click Windows tool that automates Steam DRM removal using the RUNE Steam emulator — select a game folder, and it handles the rest.
+
 https://cs.rin.ru/forum/viewtopic.php?f=20&t=159883
-
-
----
 
 ## Features
 
-- **Three types of RUNE steam emulators**
-  - **Regular** — Replaces Steam API DLLs with the Rune emulator
-  - **Steakclient** — Uses `steakclient64.dll` + `winmm.dll` loader (64-bit games only)
-  - **Steamclient** — Automatically patches the SHELL32.dll import string in the original Steam API DLL and deploys steamclient loader files
-- **SteamStub DRM Removal** — Strips SteamStub DRM via Steamless or a standalone SteamStub patcher (`winmm.dll`)
-- **Automatic Steam Search** — Enter a game name or AppID; the tool queries the Steam Store API, falls back to web scraping (BeautifulSoup) and DuckDuckGo search
-- **DLC Unlocking** — Fetches the full DLC list from Steam and writes it into the emulator config
-- **Steam Interface Extraction** — Automatically generates interfaces from the original `steam_api.dll` / `steam_api64.dll` 
-- **Crack-Only Mode** — Generates a standalone `Crack.Only.zip` without modifying the game folder
-- **Emulator Auto-Updates** — Checks a GitHub release manifest for newer emulator components and downloads them with SHA-256 verification
-- **Drag & Drop** — Drop a game folder onto the window to select it
-- **Configurable** — Backup suffix, default profile, DRM method, crack output mode, and update behavior are all saved to `settings.ini`
+- 🖱️ Drag & drop the game folder (or browse for it)
+- 🔍 Automatic game search: name or AppID → Steam Store lookup, with web-scrape and DuckDuckGo fallbacks
+- 🎮 Three emulator profiles: **Regular**, **Steakclient**, **Steamclient**
+- 🧹 SteamStub DRM removal via Steamless or a standalone patcher
+- 📦 DLC auto-unlock: pulls the full DLC list straight from Steam
+- 🧩 Steam interface auto-extraction from the original `steam_api(64).dll`
+- 🗃️ Crack-Only mode: builds a standalone `Crack.Only.zip` without touching the game folder
+- ⬆️ Emulator auto-updates with SHA-256 verification
+- ⚙️ Configurable via Settings dialog — saved to `settings.ini`
 
 ## Screenshots
 
@@ -34,29 +29,14 @@ https://cs.rin.ru/forum/viewtopic.php?f=20&t=159883
 ### Python Dependencies
 
 ```
-customtkinter
-tkinterdnd2
-requests
-pywin32
-steam
-```
-
-**Optional** (enable extra search fallbacks):
-
-```
-beautifulsoup4
-ddgs
-```
-
-Install all dependencies:
-
-```
 pip install customtkinter tkinterdnd2 requests pywin32 beautifulsoup4 ddgs steam
 ```
 
+`beautifulsoup4` and `ddgs` are optional — they enable extra search fallbacks.
+
 ### Emulator Files
 
-On first launch, the GUI automatically downloads the required emulator components from the configured GitHub release. The following directories are populated under `rune/`:
+On first launch, the GUI downloads the required emulator components automatically:
 
 | Directory | Component |
 |---|---|
@@ -67,19 +47,15 @@ On first launch, the GUI automatically downloads the required emulator component
 
 Steamless CLI should be placed in a `steamless/` directory alongside the script.
 
-## Usage
+## How to Use
 
-```
-python rune_auto_cracker.py
-```
-
-1. **Select a game folder** — Click Browse or drag & drop a folder onto the window
-2. **Search for the game** — Enter the game name or Steam AppID, then click Search
-3. **Crack** — Choose a crack profile (Regular / Steakclient / Steamclient) and the tool handles the rest
+1. Run `python rune_auto_cracker.py`.
+2. Drag the game folder into the window (or press **Browse**).
+3. Enter the game name or AppID and press **Search**.
+4. Pick a crack profile — **Regular**, **Steakclient**, or **Steamclient**.
+5. Press **Crack** — done.
 
 ## Settings
-
-Settings are saved to `settings.ini` and can be changed from the GUI Settings dialog:
 
 | Setting | Options | Default |
 |---|---|---|
@@ -91,16 +67,15 @@ Settings are saved to `settings.ini` and can be changed from the GUI Settings di
 
 ## How It Works
 
-1. **Locate Steam API DLLs** — Recursively scans the game folder for `steam_api.dll` and `steam_api64.dll`
-2. **Remove SteamStub DRM** — Runs Steamless CLI on every `.exe` to strip SteamStub protection (or deploys the SteamStub patcher DLL)
-3. **Deploy emulator** — Backs up original DLLs (renamed with the configured suffix) and copies emulator files into the game directory, writing the AppID, API version, and DLC list into the emulator config
-4. **Generate interfaces** — Extracts Steam interface version strings from the original DLL binary and injects them into the emulator config
-5. **Package (optional)** — In Crack-Only or Both mode, builds a zip containing only the crack files
+1. Recursively scans the game folder for `steam_api.dll` / `steam_api64.dll`
+2. Strips SteamStub DRM via Steamless CLI or the standalone patcher
+3. Backs up the original DLLs and deploys the emulator files, writing AppID, API version, and DLC list into the config
+4. Extracts Steam interface strings from the original DLL and injects them into the emulator config
+5. *(Optional)* Packages a `Crack.Only.zip` containing just the crack files
 
 ## Privacy
 
-- Network requests are made only to `store.steampowered.com` (game/DLC data) and the configured GitHub release URL (emulator updates)
-- Nothing is logged or sent to any third-party service
+Network requests go only to `store.steampowered.com` (game/DLC data) and the configured GitHub release URL (emulator updates). Nothing is logged or sent anywhere else.
 
 ## License
 
