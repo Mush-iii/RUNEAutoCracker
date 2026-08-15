@@ -7,11 +7,10 @@
 <a href="https://github.com/Mush-iii/RUNEAutoCracker/releases"><img src="https://img.shields.io/github/v/release/Mush-iii/RUNEAutoCracker" alt="Release"></a>
 <a href="https://github.com/Mush-iii/RUNEAutoCracker/releases"><img src="https://img.shields.io/github/downloads/Mush-iii/RUNEAutoCracker/total" alt="downloads"></a>
 <img src="https://img.shields.io/badge/python-3.7%2B-blue" alt="Python">
+<a href="https://cs.rin.ru/forum/viewtopic.php?f=20&t=159883"><img src="https://img.shields.io/badge/CS.RIN.RU-Forum%20Thread-orange" alt="Forum Thread"></a>
 
 </div>
 
-
-🔗 Forum thread: https://cs.rin.ru/forum/viewtopic.php?f=20&t=159883
 
 ## What it does
 
