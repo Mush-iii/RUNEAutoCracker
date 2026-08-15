@@ -6,6 +6,8 @@
 
 <a href="https://github.com/Mush-iii/RUNEAutoCracker/releases"><img src="https://img.shields.io/github/v/release/Mush-iii/RUNEAutoCracker" alt="Release"></a>
 <a href="https://github.com/Mush-iii/RUNEAutoCracker/releases"><img src="https://img.shields.io/github/downloads/Mush-iii/RUNEAutoCracker/total" alt="downloads"></a>
+<img src="https://img.shields.io/badge/python-3.7%2B-blue" alt="Python">
+<img src="https://img.shields.io/badge/maintained-yes-brightgreen" alt="maintained">
 
 </div>
 
