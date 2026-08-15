@@ -53,7 +53,7 @@ try:
         except ImportError:
             DDGS_AVAILABLE = False
 
-    VERSION = "1.2.1"
+    VERSION = "1.2.2"
 
     RETRY_DELAY = 15
     RETRY_MAX = 30
@@ -298,14 +298,29 @@ try:
                 self.req = req
 
     # ─── STEAM SEARCH ────────────────────────────────────────────────────────────
+    def _is_valid_game_candidate(appid: str) -> bool:
+        try:
+            resp = requests.get(
+                f"https://store.steampowered.com/api/appdetails?appids={appid}&filters=basic",
+                timeout=10, headers={"User-Agent": USER_AGENT})
+            data = resp.json().get(str(appid), {})
+            if not data.get("success"):
+                return False
+            app_type = data["data"].get("type", "")
+            return app_type in ("game", "")
+        except Exception:
+            return True
+
     def search_steam_appid(query: str) -> Optional[str]:
         try:
             url = f"https://store.steampowered.com/api/storesearch/?term={urllib.parse.quote(query)}&l=en&cc=US"
             resp = requests.get(url, timeout=15, headers={"User-Agent": USER_AGENT})
             if resp.status_code == 200:
                 items = resp.json().get("items", [])
-                if items:
-                    return str(items[0]["id"])
+                for item in items:
+                    candidate = str(item["id"])
+                    if _is_valid_game_candidate(candidate):
+                        return candidate
         except Exception:
             pass
 
@@ -314,11 +329,12 @@ try:
                 url2 = f"https://store.steampowered.com/search/suggest?term={urllib.parse.quote(query)}&f=games&cc=US&l=en"
                 resp2 = requests.get(url2, timeout=10, headers={"User-Agent": USER_AGENT})
                 soup = BeautifulSoup(resp2.text, "html.parser")
-                first = soup.select_one("a[href*='/app/']")
-                if first:
-                    m = re.search(r"/app/(\d+)/", first.get("href", ""))
+                for a in soup.select("a[href*='/app/']"):
+                    m = re.search(r"/app/(\d+)/", a.get("href", ""))
                     if m:
-                        return m.group(1)
+                        candidate = m.group(1)
+                        if _is_valid_game_candidate(candidate):
+                            return candidate
             except Exception:
                 pass
 
@@ -343,7 +359,7 @@ try:
                     for r in results:
                         href = r.get("href", "")
                         appid = _extract_appid_from_url(href)
-                        if appid:
+                        if appid and _is_valid_game_candidate(appid):
                             return appid
                 except Exception:
                     continue
@@ -893,8 +909,9 @@ try:
                 appID = 0
                 return False
 
-            if BYPASS_GAME_VERIFICATION != "1" and data["data"]["type"] != "game":
-                self.log_lookup(False, "not a game")
+            app_type = data["data"].get("type", "")
+            if BYPASS_GAME_VERIFICATION != "1" and app_type not in ("game", ""):
+                self.log_lookup(False, f"not a game (type: {app_type})")
                 appID = 0
                 return False
 
